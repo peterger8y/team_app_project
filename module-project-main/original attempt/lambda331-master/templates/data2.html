@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HOWDY PARTNER</title>
+</head>
+<body>
+{% for key,value in request.form.items() %}
+<h2> {{key}}</h2>
+<p> {{value}}</p>
+{% endfor %}
+<br>
+<a href="http://127.0.0.1:5000/form">generate username {{ name }}</a>
+</body>
+
+</html>
