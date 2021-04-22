@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request
 import os
-import config
 
 from .data_model import DB, User
 
