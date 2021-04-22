@@ -1,21 +1,19 @@
 from flask import Flask, render_template, request
 import os
+import config
+
 from .data_model import DB, User
-from os import path
+
 
 def create_app():
-
-
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     DB.init_app(app)
 
     @app.route('/')
     def landing():
-        #if not path.exists(app.config['SQLALCHEMY_DATABASE_URI']):
-            #DB.drop_all()
-            #DB.create_all()
+        DB.create_all()
         return render_template('landingPage.html')
 
     @app.route('/login')
@@ -26,15 +24,16 @@ def create_app():
     def data():
 
         if request.method == 'GET':
-            return f"The URL /data is accessed directly. Try going to '/form' to submit form"
+            return f"The URL /data is accessed directly. Try going to '/login' to submit form"
         if request.method == 'POST':
             username = request.form['Username']
             password = request.form['Password']
-            alpha = User.query.filter_by(username=username, password=password)
-            if len(alpha == 0):
+            alpha = User.query.filter_by(username=username, password=password).all()
+            if alpha == 0:
                 return render_template('sign_in_fail.html')
             else:
-                return render_template('login_success')
+                return render_template('login_success.html')
+
     @app.route('/signup_check', methods=['POST', 'GET'])
     def data2():
         if request.method == 'GET':
@@ -44,7 +43,7 @@ def create_app():
             name = request.form['Name']
             username = request.form['Username']
             password = request.form['Password']
-            a = User.query.filter_by(username= username).all()
+            a = User.query.filter_by(username=username).all()
             if len(a) != 0:
                 return render_template('user_gen_fail.html')
             else:
@@ -52,6 +51,7 @@ def create_app():
                 DB.session.add(info)
                 DB.session.commit()
                 return render_template('user_signup_confirmation.html', form_data=form_data, name=name)
+
     @app.route('/reset')
     def reset():
         DB.drop_all()
