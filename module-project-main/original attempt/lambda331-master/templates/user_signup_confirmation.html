@@ -2,15 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HOWDY PARTNER</title>
+    <title></title>
 </head>
 <body>
+<h1>Success!</h1>
 {% for key,value in request.form.items() %}
 <h2> {{key}}</h2>
 <p> {{value}}</p>
 {% endfor %}
 <br>
-<a href="http://127.0.0.1:5000/form">generate username {{ name }}</a>
+<a href="http://127.0.0.1:5000/login">sign in, click here</a>
 </body>
 
 </html>

@@ -1,25 +1,26 @@
 from flask import Flask, render_template, request
-import json
-from .data_model import DB, Mango
+import os
+from .data_model import DB, User
 from os import path
 
 def create_app():
 
 
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URI']
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     DB.init_app(app)
 
     @app.route('/')
     def landing():
-        if not path.exists(app.config['SQLALCHEMY_DATABASE_URI']):
-            DB.drop_all()
-            DB.create_all()
-        return render_template('base.html')
+        #if not path.exists(app.config['SQLALCHEMY_DATABASE_URI']):
+            #DB.drop_all()
+            #DB.create_all()
+        return render_template('landingPage.html')
 
-    @app.route('/form')
+    @app.route('/login')
     def form():
-        return render_template('form.html')
+        return render_template('login.html')
 
     @app.route('/data', methods=['POST', 'GET'])
     def data():
@@ -27,24 +28,35 @@ def create_app():
         if request.method == 'GET':
             return f"The URL /data is accessed directly. Try going to '/form' to submit form"
         if request.method == 'POST':
-            form_data = request.form
-
-            return render_template('data.html', form_data=form_data)
-    @app.route('/data2', methods=['POST', 'GET'])
+            username = request.form['Username']
+            password = request.form['Password']
+            alpha = User.query.filter_by(username=username, password=password)
+            if len(alpha == 0):
+                return render_template('sign_in_fail.html')
+            else:
+                return render_template('login_success')
+    @app.route('/signup_check', methods=['POST', 'GET'])
     def data2():
         if request.method == 'GET':
             return f"the URL /data2 is accessed directly. Try going to '/' to submit tweet input"
         if request.method == 'POST':
             form_data = request.form
-            id = request.form['ID']
             name = request.form['Name']
-            city = request.form['City']
-            country = request.form['Country']
-            info = Mango(id=id, name=name, city=city, country=country)
-            DB.session.add(info)
-            DB.session.commit()
-
-            return render_template('data2.html', form_data=form_data, name=name)
+            username = request.form['Username']
+            password = request.form['Password']
+            a = User.query.filter_by(username= username).all()
+            if len(a) != 0:
+                return render_template('user_gen_fail.html')
+            else:
+                info = User(name=name, username=username, password=password)
+                DB.session.add(info)
+                DB.session.commit()
+                return render_template('user_signup_confirmation.html', form_data=form_data, name=name)
+    @app.route('/reset')
+    def reset():
+        DB.drop_all()
+        DB.create_all()
+        return 'database refreshed'
 
     return app
 
