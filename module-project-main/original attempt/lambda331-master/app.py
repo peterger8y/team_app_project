@@ -7,7 +7,7 @@ def create_app():
 
 
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URI']
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     DB.init_app(app)
 
