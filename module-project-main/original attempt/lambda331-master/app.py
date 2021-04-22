@@ -1,12 +1,14 @@
 from flask import Flask, render_template, request
 import os
-
+from decouple import config
 from .data_model import DB, User
+
+DATABASE_URL = config('DATABASE_URL')
 
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     DB.init_app(app)
 
