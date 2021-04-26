@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request
-import os
 from decouple import config
-from .data_model import DB, User
+from data_model import DB, User
 
 DATABASE_URL = config('DATABASE_URL')
 
@@ -61,3 +60,7 @@ def create_app():
 
     return app
 
+
+if __name__ == "__main__":
+    app = create_app()
+    app.run()
