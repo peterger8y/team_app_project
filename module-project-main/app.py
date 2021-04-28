@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 from decouple import config
 from data_model import DB, User
+from inside_airbnb import InsideAirBnB
 
 DATABASE_URL = config('DATABASE_URL')
 
@@ -14,6 +15,8 @@ def create_app():
     @app.route('/')
     def landing():
         DB.create_all()
+        airbnb = InsideAirBnB()
+        location_names = airbnb.get_location_names()  # for use in a dropdown
         return render_template('landingPage.html')
 
     @app.route('/login')
