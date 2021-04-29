@@ -43,18 +43,19 @@
 							<section id="one">
 								<div class="inner">
 									<header class="major">
-                                        {% if current_user.is_authenticated %}
-										<h1>User: {{ current_user.username }}</h1>
-                                        {% endif %}
-                                        {% if not current_user.is_authenticated %}
-                                        <h1>User: Not Yet Logged In...</h1>
-                                        {% endif %}
+										<h1>Generic</h1>
 									</header>
-									{% if current_user.is_authenticated %}
-                                    <p>Machine Learning Output: {{ alpha }}</p>
-                                    {% endif %}
-                                    <p>Above are your list of properties input for previous optimization.</p>
-                                    <p>To input more, please revisit the <a href="/input">Optimization Page!</a></p>
+									{% from "_formhelper.html" import render_field %}
+                                    <form method=post>
+                                      <dl>
+                                        {{ render_field(form.location) }}
+                                        {{ render_field(form.latitude) }}
+                                        {{ render_field(form.longitude) }}
+                                        {{ render_field(form.score) }}
+                                          {{ form.csrf_token }}
+                                      </dl>
+                                      <p><input type=submit value=Register>
+                                    </form>
 								</div>
 							</section>
 

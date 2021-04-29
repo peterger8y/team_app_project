@@ -16,6 +16,7 @@ class InsideAirBnB:
     'visualisations/neighbourhoods.csv',       0.005 MB,   (230, 2)         neighborhoods-vis
     'visualisations/neighbourhoods.geojson',   0.604 MB,   (233, 3)         neighborhoods-geo
     """
+
     def __init__(self):
         self.locations = self.load_locations()
 
@@ -143,17 +144,16 @@ class InsideAirBnB:
         dataframes = {df_name(url): load_df(url) for url in urls}
         return dataframes
 
-locations = InsideAirBnB()
-list_locations = locations.load_locations().get('name')
 
-if __name__ == "__main__":
-    airbnb = InsideAirBnB()
-    # airbnb.regenerate_locations()
-    # print(airbnb.locations.head())
 
-    data_files = ['visualisations/listings.csv', 'visualisations/reviews.csv']
-    dates = airbnb.lookup('dates', for_='Francisco')
-    print(dates)
-    middle_date = dates[len(dates) // 2]
-    sf_data = airbnb.get_data(location_name='Francisco', date=middle_date, data_files=data_files)
-    print(sf_data)
+# if __name__ == "__main__":
+# airbnb = InsideAirBnB()
+# airbnb.regenerate_locations()
+# print(airbnb.locations.head())
+
+# data_files = ['visualisations/listings.csv', 'visualisations/reviews.csv']
+# dates = airbnb.lookup('dates', for_='Francisco')
+# print(dates)
+# middle_date = dates[len(dates) // 2]
+# sf_data = airbnb.get_data(location_name='Francisco', date=middle_date, data_files=data_files)
+# print(sf_data)

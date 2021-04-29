@@ -1,8 +1,9 @@
-from wtforms import BooleanField, StringField, PasswordField, IntegerField, SelectField, DateField, validators
+from wtforms import BooleanField, StringField, PasswordField, IntegerField, SelectField, FloatField, DateField, validators
 from wtforms.validators import DataRequired, Email, ValidationError, Length
 from flask_wtf import FlaskForm
 from .data_model import User
-from .inside_airbnb import list_locations
+from .train import list_locations
+
 
 
 def validate_username(field):
@@ -40,6 +41,8 @@ class LoginForm(FlaskForm):
 
 class PredictionForm(FlaskForm):
     location = SelectField('City/Country', [validators.InputRequired()], choices=[x for x in list_locations])
-    date = DateField('Day/Month/Year started hosting', [validators.InputRequired()])
-    neighbourhood = StringField('Neighbourhood', [validators.InputRequired()])
+    longitude = FloatField('Longitude', [validators.InputRequired()])
+    latitude = FloatField('Longitude', [validators.InputRequired()])
     score = IntegerField('Avg Review Score (0-100)', [validators.InputRequired()])
+
+

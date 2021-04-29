@@ -20,9 +20,10 @@ class User(DB.Model, UserMixin):
 class Property(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     location = DB.Column(DB.String, nullable=False)
-    neighbourhood = DB.Column(DB.String, nullable=False)
-    experience = DB.Column(DB.String, nullable=False)
+    latitude = DB.Column(DB.Float, nullable=False)
+    longitude = DB.Column(DB.Float, nullable=False)
     score = DB.Column(DB.Integer, nullable=False)
+    prediction = DB.Column(DB.String, nullable=False)
     user_id = DB.Column(DB.Unicode(100), DB.ForeignKey('user.id'))
     user = DB.relationship("User", backref=DB.backref("properties", lazy=True))
 

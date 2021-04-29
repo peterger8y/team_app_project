@@ -1,14 +1,16 @@
 from flask import Flask, render_template, request, redirect, session, abort, url_for
-from flask_login import LoginManager, login_user, logout_user
+from flask_login import LoginManager, login_user, logout_user, current_user
 from flask_login.utils import login_required
 from .signup import RegistrationForm, LoginForm, PredictionForm
 from is_safe_url import is_safe_url
-from .data_model import DB, User, get_property
+from .data_model import DB, User, Property, get_property
 import pandas as pd
 import joblib
 import os
 from datetime import datetime
+from .train import get_at_it
 from werkzeug.security import generate_password_hash
+from .machine_learning import train
 
 login_manager = LoginManager()
 
@@ -28,8 +30,8 @@ def create_app():
 
     @app.route('/')
     def landing():
-        # DB.drop_all()
-        # DB.create_all()
+        #DB.drop_all()
+        #DB.create_all()
         return render_template('landing.html')
 
     @app.route('/register', methods=['GET', 'POST'])
@@ -55,7 +57,6 @@ def create_app():
     def login():
         form = LoginForm()
         if request.method == 'POST' and form.validate_on_submit():
-            # Login and validate the user.
             check = User.query.filter(
                 User.username == form.username.data and User.password == form.username.data).first()
             if check:
@@ -69,24 +70,26 @@ def create_app():
                 return 'login fail'
         return render_template('login.html', form=form)
 
-    @app.route('/input')
-    def input_info():
+    @app.route('/input', methods=['GET', 'POST'])
+    @login_required
+    def pre_input():
         form = PredictionForm()
-        return render_template('predict.html', form=form)
-
-    @app.route('/result', methods=['GET', 'POST'])
-    def results():
-        if request.method == 'GET':
-            return f"the URL /result is accessed directly. Try going to '/predict' to submit metrics"
-        if request.method == 'POST':
-            metric1 = request.form['Date Commenced Hosting']
-            metric2 = request.form['Neighborhood']
-            metric3 = request.form['Avg Review Score Rating(out of 100)']
-            predictor = joblib.load('./pipe_model2.joblib')
-            d = {'host_since': metric1, 'neighbourhood_group_cleansed': metric2, 'review_scores_rating': metric3}
-            row = pd.DataFrame(data=d, index=[0])
-            alpha = predictor.predict(row)
-            return str(alpha)
+        if request.method == 'POST' and form.validate:
+            alpha = form.location.data
+            beta = form.latitude.data
+            gamma = form.longitude.data
+            delta = form.score.data
+            d = {'latitude': beta, 'longitude': gamma, 'review_scores_rating': delta}
+            zeta = pd.DataFrame(data=d, index=[0])
+            eta = get_at_it(alpha)
+            theta = train(eta)
+            iota = theta.predict(zeta)
+            property = Property(location=str(alpha), latitude=beta, longitude=gamma, score=delta,
+                                prediction=iota[0], user_id=current_user.id)
+            DB.session.add(property)
+            DB.session.commit()
+            redirect('profile')
+        return render_template('pre_input.html', form=form)
 
     @app.route('/logout')
     def logout():
@@ -95,7 +98,9 @@ def create_app():
 
     @app.route('/profile', methods=['GET', 'POST'])
     def show():
-        return render_template('profile.html')
+        alpha = Property.query.filter_by(user_id=current_user.id).first()
+        dict = alpha.prediction
+        return render_template('profile.html', alpha=dict)
 
     @app.route('/reset')
     def reset():

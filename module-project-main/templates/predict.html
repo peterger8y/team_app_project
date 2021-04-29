@@ -28,14 +28,11 @@
 				<!-- Menu -->
 					<nav id="menu">
 						<ul class="links">
-							<li><a href="index.html">Home</a></li>
-							<li><a href="landing.html">Landing</a></li>
-							<li><a href="predict.html">Generic</a></li>
-							<li><a href="elements.html">Elements</a></li>
-						</ul>
-						<ul class="actions stacked">
-							<li><a href="#" class="button primary fit">Get Started</a></li>
-							<li><a href="#" class="button fit">Log In</a></li>
+							<li><a href="/">Home</a></li>
+							<li><a href="/login">Login</a></li>
+							<li><a href="/input">Optimizer</a></li>
+							<li><a href="/profile">Profile Page</a></li>
+                            <li><a href="/register">Register Now</a></li>
 						</ul>
 					</nav>
 
@@ -51,9 +48,9 @@
 									{% from "_formhelper.html" import render_field %}
                                 <form method=post>
                                     <dl>
-                                        {{ render_field(form.location) }}
-                                        {{ render_field(form.date) }}
                                         {{ render_field(form.neighbourhood) }}
+                                        {{ render_field(form.longitude) }}
+                                        {{ render_field(form.latitude) }}
                                         {{ render_field(form.score) }}
                                         {{ form.csrf_token }}
                                     </dl>
@@ -143,6 +140,7 @@
 			<script src="/static//js/breakpoints.min.js"></script>
 			<script src="/static//js/util.js"></script>
 			<script src="/static//js/main.js"></script>
+            <script src="/static//js/predict.js"></script>
 
 	</body>
 </html>
