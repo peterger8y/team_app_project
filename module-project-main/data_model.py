@@ -5,20 +5,28 @@ DB = SQLAlchemy()
 
 
 class User(DB.Model, UserMixin):
-
     id = DB.Column(DB.Unicode(100), primary_key=True)
     username = DB.Column(DB.String, nullable=False)
     email = DB.Column(DB.String, nullable=False)
     password = DB.Column(DB.String, nullable=False)
 
-    def __init__(self, **kwargs):
-        password = kwargs.pop('password')
-        password = generate_password_hash(password)
-        kwargs['password'] = password
-        super(User, self).__init__(**kwargs)
-
     def check_password(self, password):
-        return check_password_hash(self.password, password)
+        if not password == self.password:
+            return False
+        else:
+            return True
 
-    def to_json(self):
-        return {'id': self.id, 'username': self.username}
+
+class Property(DB.Model):
+    id = DB.Column(DB.Integer, primary_key=True)
+    location = DB.Column(DB.String, nullable=False)
+    neighbourhood = DB.Column(DB.String, nullable=False)
+    experience = DB.Column(DB.String, nullable=False)
+    score = DB.Column(DB.Integer, nullable=False)
+    user_id = DB.Column(DB.Unicode(100), DB.ForeignKey('user.id'))
+    user = DB.relationship("User", backref=DB.backref("properties", lazy=True))
+
+
+def get_property(user_id):
+    query = Property.query.filter_by(Property.user_id == user_id)
+    return query

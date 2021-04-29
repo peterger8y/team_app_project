@@ -1,6 +1,13 @@
-from wtforms import BooleanField, StringField, PasswordField, validators
-from wtforms.validators import DataRequired, Email
+from wtforms import BooleanField, StringField, PasswordField, IntegerField, SelectField, DateField, validators
+from wtforms.validators import DataRequired, Email, ValidationError, Length
 from flask_wtf import FlaskForm
+from .data_model import User
+from .inside_airbnb import list_locations
+
+
+def validate_username(field):
+    if User.query.filter_by(username=field.data).count() > 0:
+        raise ValidationError('Username %s already exists!' % field.data)
 
 
 class RegistrationForm(FlaskForm):
@@ -13,25 +20,26 @@ class RegistrationForm(FlaskForm):
     confirm = PasswordField('Repeat Password')
 
 
-class LoginTrue(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
+class LoginForm(FlaskForm):
+    username = StringField('Username', [validators.Length(max=64)])
+    password = PasswordField('Password', [validators.Length(6, 16)])
+
+    def validate_username(self, field):
+        if not self.get_user():
+            raise ValidationError('Invalid username!')
+
+    def validate_password(self, field):
+        if not self.get_user():
+            return
+        if not self.get_user().check_password(field.data):
+            raise ValidationError('Incorrect password!')
+
+    def get_user(self):
+        return User.query.filter_by(username=self.username.data).first()
 
 
-#class LoginTrue(FlaskForm):
-    #username = StringField('Username', validators=[Length(max=64)])
-    #password = PasswordField('Password', validators=[Length(8, 16)])
-    #remember = BooleanField('Remember Me')
-
-    #def validate_username(self, field):
-        #if not self.get_user():
-            #raise ValidationError('Invalid username!')
-
-    #def validate_password(self, field):
-        #if not self.get_user():
-           # return
-        #if not self.get_user().check_password(field.data):
-            #raise ValidationError('Incorrect password!')
-
-    #def get_user(self):
-        #return User.query.filter_by(username=self.username.data).first()
+class PredictionForm(FlaskForm):
+    location = SelectField('City/Country', [validators.InputRequired()], choices=[x for x in list_locations])
+    date = DateField('Day/Month/Year started hosting', [validators.InputRequired()])
+    neighbourhood = StringField('Neighbourhood', [validators.InputRequired()])
+    score = IntegerField('Avg Review Score (0-100)', [validators.InputRequired()])
