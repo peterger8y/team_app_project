@@ -111,10 +111,10 @@ class InsideAirBnB:
             location_url = 'united-states/ny/new-york-city'
 
         if date is None:  # if no date is provided, assume the most recent date (first in the list)
-            date = self.lookup(column='dates', for_=location_name)[1]
+            date = self.lookup(column='dates', for_=location_name)[0]
 
         if data_files is None:
-            data_files = [self.data_files[0]]
+            data_files = ['data/listings.csv.gz']
 
         domain = 'http://data.insideairbnb.com'
         place_date = '/'.join([domain, location_url, date])
