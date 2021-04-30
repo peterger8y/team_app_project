@@ -29,9 +29,13 @@ def create_app():
     login_manager.init_app(app)
 
     @app.route('/')
+    def begin():
+        return redirect('/landing')
+
+    @app.route('/landing', methods=['GET', 'POST'])
     def landing():
-        #DB.drop_all()
-        #DB.create_all()
+        # DB.drop_all()
+        # DB.create_all()
         return render_template('landing.html')
 
     @app.route('/register', methods=['GET', 'POST'])
@@ -88,19 +92,23 @@ def create_app():
                                 prediction=iota[0], user_id=current_user.id)
             DB.session.add(property)
             DB.session.commit()
-            redirect('profile')
+            return redirect('profile')
         return render_template('pre_input.html', form=form)
 
     @app.route('/logout')
     def logout():
         logout_user()
-        return 'success'
+        return render_template('logout.html')
 
     @app.route('/profile', methods=['GET', 'POST'])
     def show():
-        alpha = Property.query.filter_by(user_id=current_user.id).first()
-        dict = alpha.prediction
-        return render_template('profile.html', alpha=dict)
+        dict_list = []
+        if current_user.is_authenticated:
+            alpha = Property.query.filter_by(user_id=current_user.id).all()
+            for x in alpha:
+                delta = {'property_#': x.id, 'location': x.location, 'latitude': x.latitude, 'longitude': x.longitude, 'score': x.score, 'optimized price': x.prediction}
+                dict_list.append(delta)
+        return render_template('profile.html', alpha=dict_list)
 
     @app.route('/reset')
     def reset():

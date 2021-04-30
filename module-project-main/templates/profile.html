@@ -26,6 +26,7 @@
 					</header>
 
 				<!-- Menu -->
+                {% if not current_user.is_authenticated %}
 					<nav id="menu">
 						<ul class="links">
 							<li><a href="/">Home</a></li>
@@ -35,6 +36,17 @@
                             <li><a href="/register">Register Now</a></li>
 						</ul>
 					</nav>
+                {% endif %}
+                {% if current_user.is_authenticated %}
+					<nav id="menu">
+						<ul class="links">
+							<li><a href="/">Home</a></li>
+							<li><a href="/logout">Logout</a></li>
+							<li><a href="/input">Optimizer</a></li>
+							<li><a href="/profile">Profile Page</a></li>
+						</ul>
+					</nav>
+                {% endif %}
 
 				<!-- Main -->
 					<div id="main" class="alt">
@@ -51,7 +63,25 @@
                                         {% endif %}
 									</header>
 									{% if current_user.is_authenticated %}
-                                    <p>Machine Learning Output: {{ alpha }}</p>
+                                    <p>Machine Learning Outputs:</p>
+                                       <table>
+                                        <tr>
+                                            <td>Id</td>
+                                            <td>Location</td>
+                                            <td>Latitude</td>
+                                            <td>Longitude</td>
+                                            <td>Review Score</td>
+                                            <td>Optimized Price</td>
+                                        </tr>
+
+                                        {% for item in alpha %}
+                                            <tr>
+                                            {% for key, value in item.items() %}
+                                            <td>{{ value }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                    </table>
                                     {% endif %}
                                     <p>Above are your list of properties input for previous optimization.</p>
                                     <p>To input more, please revisit the <a href="/input">Optimization Page!</a></p>

@@ -27,6 +27,7 @@
 					</header>
 
 				<!-- Menu -->
+					{% if not current_user.is_authenticated %}
 					<nav id="menu">
 						<ul class="links">
 							<li><a href="/">Home</a></li>
@@ -36,7 +37,17 @@
                             <li><a href="/register">Register Now</a></li>
 						</ul>
 					</nav>
-
+                {% endif %}
+                {% if current_user.is_authenticated %}
+					<nav id="menu">
+						<ul class="links">
+							<li><a href="/">Home</a></li>
+							<li><a href="/logout">Logout</a></li>
+							<li><a href="/input">Optimizer</a></li>
+							<li><a href="/profile">Profile Page</a></li>
+						</ul>
+					</nav>
+                {% endif %}
 				<!-- Banner -->
 				<!-- Note: The "styleN" class below should match that of the header element. -->
 					<section id="banner" class="style2" style="background-position: center 0px; background-image: url('/Users/petergeraghty/Desktop/team_app_project/lambda331-master/templates/images/treehouse.jpg');">
@@ -88,6 +99,7 @@
 									<a href="/input" class="image">
 										<img src="/static/images/brick.jpg" alt="" data-position="top center" />
 									</a>
+                                    {% if not current_user.is_authenticated %}:
 									<div class="content">
 										<div class="inner">
 											<header class="major">
@@ -99,6 +111,20 @@
 											</ul>
 										</div>
 									</div>
+                                    {% endif %}
+                                    {% if current_user.is_authenticated %}:
+                                        <div class="content">
+                                            <div class="inner">
+                                                <header class="major">
+                                                    <h3>Current User: {{ current_user.username }}</h3>
+                                                </header>
+                                                <p>Check Out Your Profile/Properties here</p>
+                                                <ul class="actions">
+                                                    <li><a href="/profile" class="button">Profile/Properties</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        {% endif %}
 								</section>
 								<section>
 									<a href="predict_input.html" class="image">

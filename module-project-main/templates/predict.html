@@ -26,6 +26,7 @@
 					</header>
 
 				<!-- Menu -->
+					{% if not current_user.is_authenticated %}
 					<nav id="menu">
 						<ul class="links">
 							<li><a href="/">Home</a></li>
@@ -35,7 +36,17 @@
                             <li><a href="/register">Register Now</a></li>
 						</ul>
 					</nav>
-
+                {% endif %}
+                {% if current_user.is_authenticated %}
+					<nav id="menu">
+						<ul class="links">
+							<li><a href="/">Home</a></li>
+							<li><a href="/logout">Logout</a></li>
+							<li><a href="/input">Optimizer</a></li>
+							<li><a href="/profile">Profile Page</a></li>
+						</ul>
+					</nav>
+                {% endif %}
 				<!-- Main -->
 					<div id="main" class="alt">
 
