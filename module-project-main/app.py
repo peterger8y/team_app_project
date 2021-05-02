@@ -136,9 +136,12 @@ def create_app():
                             )
         fig.update_geos(fitbounds="locations", visible=False)
         fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        fig.plot
         fig.write_html("module-project-main/templates/image_win.html", include_plotlyjs=False)
         return render_template('image_win.html')
+
+    @app.route('/message_received')
+    def received():
+        return render_template('received.html')
 
     @app.route('/reset')
     def reset():
