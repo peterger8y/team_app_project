@@ -19,6 +19,7 @@ class User(DB.Model, UserMixin):
 
 class Property(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
+    name = DB.Column(DB.String, nullable=False)
     location = DB.Column(DB.String, nullable=False)
     latitude = DB.Column(DB.Float, nullable=False)
     longitude = DB.Column(DB.Float, nullable=False)

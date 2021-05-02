@@ -1,6 +1,7 @@
 import os
 import json
 import pandas as pd
+from urllib.request import urlopen
 
 
 class InsideAirBnB:
@@ -123,8 +124,9 @@ class InsideAirBnB:
 
             if filetype in ['csv', 'gz']:
                 df = pd.read_csv(url)  # compression format is inferred from the filename
-            # elif filetype == 'geojson':
-            #     df = gpd.read_file(url)
+            elif filetype == 'geojson':
+                with urlopen(url) as response:
+                    df = json.load(response)
             else:
                 print(f"Can't load {url} as a DataFrame")
                 df = None
@@ -143,17 +145,3 @@ class InsideAirBnB:
 
         dataframes = {df_name(url): load_df(url) for url in urls}
         return dataframes
-
-
-
-# if __name__ == "__main__":
-# airbnb = InsideAirBnB()
-# airbnb.regenerate_locations()
-# print(airbnb.locations.head())
-
-# data_files = ['visualisations/listings.csv', 'visualisations/reviews.csv']
-# dates = airbnb.lookup('dates', for_='Francisco')
-# print(dates)
-# middle_date = dates[len(dates) // 2]
-# sf_data = airbnb.get_data(location_name='Francisco', date=middle_date, data_files=data_files)
-# print(sf_data)

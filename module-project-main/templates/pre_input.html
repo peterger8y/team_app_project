@@ -6,7 +6,7 @@
 -->
 <html>
 	<head>
-		<title>Generic - Forty by HTML5 UP</title>
+		<title>Optimizer - Forty by HTML5 UP</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="/static//css/main.css" />
@@ -54,11 +54,12 @@
 							<section id="one">
 								<div class="inner">
 									<header class="major">
-										<h1>Generic</h1>
+										<h1>Optimizer</h1>
 									</header>
 									{% from "_formhelper.html" import render_field %}
                                     <form method=post>
                                       <dl>
+                                        {{ render_field(form.name) }}
                                         {{ render_field(form.location) }}
                                         {{ render_field(form.latitude) }}
                                         {{ render_field(form.longitude) }}

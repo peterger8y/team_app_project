@@ -1,9 +1,9 @@
-from wtforms import BooleanField, StringField, PasswordField, IntegerField, SelectField, FloatField, DateField, validators
-from wtforms.validators import DataRequired, Email, ValidationError, Length
+from wtforms import BooleanField, StringField, PasswordField, IntegerField, SelectField, FloatField, DateField, \
+    validators
+from wtforms.validators import ValidationError, Length
 from flask_wtf import FlaskForm
-from .data_model import User
+from .data_model import User, Property
 from .train import list_locations
-
 
 
 def validate_username(field):
@@ -40,9 +40,15 @@ class LoginForm(FlaskForm):
 
 
 class PredictionForm(FlaskForm):
+    name = StringField('Name of Property/Identifier', [validators.InputRequired()])
     location = SelectField('City/Country', [validators.InputRequired()], choices=[x for x in list_locations])
     longitude = FloatField('Longitude', [validators.InputRequired()])
     latitude = FloatField('Longitude', [validators.InputRequired()])
     score = IntegerField('Avg Review Score (0-100)', [validators.InputRequired()])
 
+    def validate_name(self, field):
+        if self.get_name():
+            raise ValidationError('Choose Unique Property Name')
 
+    def get_names(self):
+        return Property.query.filter_by(name=self.name.data).first()
