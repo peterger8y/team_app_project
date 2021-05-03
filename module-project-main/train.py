@@ -1,6 +1,6 @@
 from .inside_airbnb import InsideAirBnB
 import pandas as pd
-import geopandas as gpd
+
 
 locations = InsideAirBnB()
 list_locations = list(locations.load_locations().get('name'))

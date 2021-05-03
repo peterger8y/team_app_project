@@ -25,6 +25,9 @@ class Property(DB.Model):
     longitude = DB.Column(DB.Float, nullable=False)
     score = DB.Column(DB.Integer, nullable=False)
     prediction = DB.Column(DB.String, nullable=False)
+    bedrooms = DB.Column(DB.Integer, nullable=False)
+    accommodates = DB.Column(DB.Integer, nullable=False)
+    host_listings = DB.Column(DB.Integer, nullable=False)
     user_id = DB.Column(DB.Unicode(100), DB.ForeignKey('user.id'))
     user = DB.relationship("User", backref=DB.backref("properties", lazy=True))
 

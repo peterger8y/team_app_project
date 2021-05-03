@@ -3,7 +3,6 @@ from flask_login import LoginManager, login_user, logout_user, current_user
 from flask_login.utils import login_required
 from .signup import RegistrationForm, LoginForm, PredictionForm
 from .data_model import DB, User, Property
-import pandas as pd
 import numpy as np
 import os
 from datetime import datetime
@@ -13,7 +12,7 @@ from .machine_learning import train
 from flask_wtf import FlaskForm
 from wtforms import SelectField, validators
 import plotly.express as px
-import plotly.graph_objects as go
+from .predict_price import PredictPrice
 
 login_manager = LoginManager()
 
@@ -81,22 +80,24 @@ def create_app():
     def pre_input():
         form = PredictionForm()
         if request.method == 'POST' and form.validate and not form.validate_name(field=form.name.data):
+            predictor = PredictPrice()
             alpha = form.location.data
             beta = form.latitude.data
             gamma = form.longitude.data
-            delta = form.score.data
+            delta = form.review_scores_rating.data
             name = form.name.data
-            d = {'latitude': beta, 'longitude': gamma, 'review_scores_rating': delta}
-            zeta = pd.DataFrame(data=d, index=[0])
-            eta = get_at_it(alpha)
-            theta = train(eta)
-            iota = theta.predict(zeta)
-            property1 = Property(location=str(alpha), latitude=beta, longitude=gamma, score=delta,
-                                 prediction=iota[0], name=name, user_id=current_user.id)
+            omega = form.calculated_host_listings_count_private_rooms.data
+            cando = form.bedrooms.data
+            blue = form.accommodates.data
+            result = request.form.to_dict()
+            nanna = predictor(result)
+            property1 = Property(location=str(alpha), latitude=beta, longitude=gamma, score=delta, bedrooms=cando,
+                                 prediction=nanna, name=name, user_id=current_user.id, host_listings=omega, accommodates=blue)
             DB.session.add(property1)
             DB.session.commit()
             return redirect('profile')
         return render_template('pre_input.html', form=form)
+
 
     @app.route('/logout')
     @login_required
