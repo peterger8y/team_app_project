@@ -47,7 +47,7 @@ class PredictionForm(FlaskForm):
     score = IntegerField('Avg Review Score (0-100)', [validators.InputRequired()])
 
     def validate_name(self, field):
-        if self.get_name():
+        if self.get_names():
             raise ValidationError('Choose Unique Property Name')
 
     def get_names(self):

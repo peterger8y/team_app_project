@@ -4,6 +4,7 @@ from flask_login.utils import login_required
 from .signup import RegistrationForm, LoginForm, PredictionForm
 from .data_model import DB, User, Property
 import pandas as pd
+import numpy as np
 import os
 from datetime import datetime
 from .train import get_at_it
@@ -12,6 +13,7 @@ from .machine_learning import train
 from flask_wtf import FlaskForm
 from wtforms import SelectField, validators
 import plotly.express as px
+import plotly.graph_objects as go
 
 login_manager = LoginManager()
 
@@ -78,7 +80,7 @@ def create_app():
     @app.route('/input', methods=['GET', 'POST'])
     def pre_input():
         form = PredictionForm()
-        if request.method == 'POST' and form.validate:
+        if request.method == 'POST' and form.validate and not form.validate_name(field=form.name.data):
             alpha = form.location.data
             beta = form.latitude.data
             gamma = form.longitude.data
@@ -130,13 +132,14 @@ def create_app():
         location = property.location
         fee, fie = get_at_it(location=location, geo=True)
         fie['neighbourhood'] = fie.index
+        fie['price'] = [np.log(x) for x in fie['price']]
         fig = px.choropleth(fie, geojson=fee, color="price",
                             locations="neighbourhood", featureidkey="properties.neighbourhood",
-                            projection="mercator"
+                            projection="mercator", color_continuous_scale="Viridis"
                             )
         fig.update_geos(fitbounds="locations", visible=False)
         fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        fig.write_html("module-project-main/templates/image_win.html", include_plotlyjs=False)
+        fig.write_html("module-project-main/templates/image_win.html", include_plotlyjs=True)
         return render_template('image_win.html')
 
     @app.route('/message_received')
