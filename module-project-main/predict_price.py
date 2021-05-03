@@ -1,106 +1,98 @@
 import os
-import json
 import numpy as np
 import pandas as pd
 
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error as mse
 from xgboost import XGBRegressor
 
 from inside_airbnb import InsideAirBnB
 
+
 class PredictPrice:
     def __init__(self):
-        self.airbnb = InsideAirBnB()
+        pass
 
-    def get_data(self, location=None):
-        # listing_file = ['data/listings.csv.gz']
-        # latest_date = self.airbnb.lookup('dates', for_=location)[0]
-        # data = self.airbnb.get_data(location_name=location, date=latest_date, data_files=listing_file)
-        # listings = data['listings-dat']
+    def predict_price(self, form):
+        location = form.pop('location')
 
+        listings = self.get_listings(location)
 
-        listings = pd.read_csv('listings.gz')
-        # listings.to_csv('listings.gz')
+        X, y, my_listing = self.to_Xy(listings, form)
+
+        model = self.make_model(X, y)
+
+        price = self.predict(model, my_listing)
+        return price
+
+    def get_listings(self, location):
+        airbnb = InsideAirBnB()
+        listing_file = ['data/listings.csv.gz']
+        latest_date = airbnb.lookup('dates', for_=location)[0]
+        data = airbnb.get_data(location_name=location, date=latest_date, data_files=listing_file)
+        listings = data['listings-dat']
+
+        # Can speed up local debugging
+        # listings.to_csv('listings.gz')  # save to a file (~20 MB)
+        # listings = pd.read_csv('listings.gz')  # load from file instead of downloading every time
         return listings
 
-    def to_Xy(self, listings):
-        # Column work
+    def to_Xy(self, listings, form, min_availability=0, active_since='2020-02-01'):
+        # Only keep listings which are available and active (30% in New York City)
+        available = listings['availability_365'] > min_availability
+        active = pd.to_datetime(listings['last_review']) > pd.to_datetime(active_since)
+        good_rows = available & active
+
+        # Crop X from listings
+        columns = form.keys()
+        X = listings.loc[good_rows, columns]
 
         # Prep the target
-        numeric_price = listings['price'].apply(lambda x: float(x.replace('$', '').replace(',', '')))
-        listings['log_price'] = numeric_price.apply(lambda x: np.log(x) if x > 0 else 0)
-        listings.drop(columns=['price'])
+        y = listings['price'].apply(lambda x: float(x.replace('$', '').replace(',', '')))
+        y = y.apply(lambda x: np.log(x) if x > 0 else 0)
+        y = y.loc[good_rows]
 
-        numeric = listings.select_dtypes(include=np.number)  # a dataframe with just the numeric columns (40 columns)
-        strings = listings.select_dtypes(include='O')  # a dataframe with just the string columns (34 columns)
+        # Format the form dictionary to a DataFrame
+        my_listing = pd.DataFrame(form, index=[0])
+        return X, y, my_listing
 
-        # Row work
-        # originally 36905 rows
-        available = listings['availability_365'] > 0  # 21617
-        active = pd.to_datetime(listings['last_review']) > pd.to_datetime('2020-02-01')  # 13735
-        good_rows = available & active  # 11161
+    def make_model(self, X, y):
+        model = XGBRegressor(n_estimators=1000, objective='reg:squarederror', n_jobs=-1)
+        return model.fit(X, y)
 
-        # Final bundling
-        X = numeric[good_rows].drop(columns=['log_price'])
-        y = numeric[good_rows]['log_price']
-        return X, y
+    def predict(self, model, listing):
+        pred = model.predict(listing)
+        return np.exp(pred[0])  # the model actually predicts log price, so np.exp() un-logs it
 
-    def baseline(y_train, y_test):
+    # These methods were useful in the Colab notebook, but aren't currently integrated here
+    def baseline(self, y_train, y_test):
         y_baseline = np.full(y_test.shape, y_train.median())
         return mse(y_test, y_baseline)
 
-    def make_model(self, listings):
-        X_train, X_test, y_train, y_test = train_test_split(
-            *self.to_Xy(listings),
-            test_size=0.2,
-            shuffle=True,
-            random_state=42,
-        )
-        self.model = XGBRegressor(n_estimators=1000, objective='reg:squarederror', n_jobs=-1)
-        # https://xgboost.readthedocs.io/en/latest/parameter.html
+    def over_base(self, y_train, y_test, y_pred):
+        mse_base = self.baseline(y_train, y_test)
+        mse_gb = mse(y_test, y_pred)
+        improvement = 1 - (mse_gb / mse_base)
+        return improvement
 
-        self.model.fit(X_train, y_train)
-
-
-    def predict(self, listing):
-        pred = self.model.predict(listing)
-        return np.exp(pred[0])  # the model actually predicts log price, so np.exp() un-logs it
-
-    def save_model(self):
+    def save_model(self, model):
         cache_folder, model_filename = 'cache', 'model.json'
         model_path = os.path.join(cache_folder, model_filename)
-        self.model.save_model(fname=model_path)
+        model.save_model(fname=model_path)
 
     def load_model(self):
         cache_folder, model_filename = 'cache', 'model.json'
         model_path = os.path.join(cache_folder, model_filename)
-        self.model = XGBRegressor()
-        self.model.load_model(fname=model_path)
-
-    def form_to_listing(self, form_json):
-        form_dict = json.loads(form_json)
-
-        for key, value in form_dict.items():
-            form_dict[key] = [value]
-        listing = pd.DataFrame.from_dict(form_dict)
-        return listing
-
-    def predict_price(self, form_json=None):
-        form_dict = json.loads(form_json)
-        location = form_dict.pop('location')
-        listings = self.get_data(location=location)
-        self.make_model(listings)
-
-        listing = self.form_to_listing(form_json=form_dict)
-        price = self.predict(listing)[0]
-        return price
+        model = XGBRegressor()
+        model.load_model(fname=model_path)
+        return model
 
     # TODO: Make a model which can generalize across locations, and then save it to a file in the repo.
+
+
 if __name__ == "__main__":
+    # form_json = '{"location": "Paris, \\u00c3\\u008ele-de-France, France", "accommodates": 6, "latitude": 48.849, "longitude": 2.337}'
+    form = {"location": "Paris, \\u00c3\\u008ele-de-France, France", "accommodates": 6, "latitude": 48.849,
+            "longitude": 2.337}
     pricer = PredictPrice()
-    location_name = pricer.airbnb.lookup(column='name', for_='Paris')
-    form_dict = {'location': location_name, 'accommodates': 6, "latitude": 48.849, "longitude": 2.337}
-    form_json = json.dumps(form_dict)
-    price_estimate = pricer.predict_price(form_json=form_json)
-    print(price_estimate)
+    price_estimate = pricer.predict_price(form)
+    print(f'This unit will usually cost ${price_estimate:,.2f}/night.')
