@@ -1,6 +1,7 @@
 import os
 import json
 import pandas as pd
+from urllib.request import urlopen
 
 
 class InsideAirBnB:
@@ -16,6 +17,7 @@ class InsideAirBnB:
     'visualisations/neighbourhoods.csv',       0.005 MB,   (230, 2)         neighborhoods-vis
     'visualisations/neighbourhoods.geojson',   0.604 MB,   (233, 3)         neighborhoods-geo
     """
+
     def __init__(self):
         self.locations = self.load_locations()
 
@@ -38,9 +40,7 @@ class InsideAirBnB:
     def regenerate_locations(self, save_path=None):
         """
         Compiles a new index of locations and dates from insideairbnb.com
-
         :return: A pandas DataFrame of ['name', 'url', 'dates']
-
         TODO: This is slow because get_dates() searches all 148,121 lines of html * 109 locations.
         It would be more efficient to take note of line numbers between each location
         in the first pass. Then for urls and dates, pass in starting and ending line numbers
@@ -63,7 +63,6 @@ class InsideAirBnB:
         def get_dates(location_url):
             """
             Finds all dates that insideairbnb.com has data for, given a location
-
             :param location_url: The place to get dates for in url form
             :return: A list of date strings in 'YYYY-MM-DD' form
             """
@@ -111,10 +110,10 @@ class InsideAirBnB:
             location_url = 'united-states/ny/new-york-city'
 
         if date is None:  # if no date is provided, assume the most recent date (first in the list)
-            date = self.lookup(column='dates', for_=location_name)[0]
+            date = self.lookup(column='dates', for_=location_name)[1]
 
         if data_files is None:
-            data_files = ['data/listings.csv.gz']
+            data_files = [self.data_files[0]]
 
         domain = 'http://data.insideairbnb.com'
         place_date = '/'.join([domain, location_url, date])
@@ -125,8 +124,9 @@ class InsideAirBnB:
 
             if filetype in ['csv', 'gz']:
                 df = pd.read_csv(url)  # compression format is inferred from the filename
-            # elif filetype == 'geojson':
-            #     df = gpd.read_file(url)
+            elif filetype == 'geojson':
+                with urlopen(url) as response:
+                    df = json.load(response)
             else:
                 print(f"Can't load {url} as a DataFrame")
                 df = None
@@ -145,16 +145,3 @@ class InsideAirBnB:
 
         dataframes = {df_name(url): load_df(url) for url in urls}
         return dataframes
-
-
-if __name__ == "__main__":
-    airbnb = InsideAirBnB()
-    # airbnb.regenerate_locations()
-    # print(airbnb.locations.head())
-
-    data_files = ['visualisations/listings.csv', 'visualisations/reviews.csv']
-    dates = airbnb.lookup('dates', for_='Francisco')
-    print(dates)
-    middle_date = dates[len(dates) // 2]
-    sf_data = airbnb.get_data(location_name='Francisco', date=middle_date, data_files=data_files)
-    print(sf_data)
