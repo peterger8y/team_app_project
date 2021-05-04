@@ -63,7 +63,10 @@
                                         {{ render_field(form.location) }}
                                         {{ render_field(form.latitude) }}
                                         {{ render_field(form.longitude) }}
-                                        {{ render_field(form.score) }}
+                                        {{ render_field(form.review_scores_rating) }}
+                                          {{ render_field(form.calculated_host_listings_count_private_rooms) }}
+                                          {{ render_field(form.bedrooms) }}
+                                          {{ render_field(form.accommodates) }}
                                           {{ form.csrf_token }}
                                       </dl>
                                       <p><input type=submit value=Register>

@@ -44,7 +44,10 @@ class PredictionForm(FlaskForm):
     location = SelectField('City/Country', [validators.InputRequired()], choices=[x for x in list_locations])
     longitude = FloatField('Longitude', [validators.InputRequired()])
     latitude = FloatField('Longitude', [validators.InputRequired()])
-    score = IntegerField('Avg Review Score (0-100)', [validators.InputRequired()])
+    review_scores_rating = IntegerField('Avg Review Score (0-100)', [validators.InputRequired()])
+    calculated_host_listings_count_private_rooms = IntegerField('Total Number of Rooms Available Across All Properties', [validators.InputRequired()])
+    bedrooms = IntegerField('Bedrooms', [validators.InputRequired()])
+    accommodates = IntegerField('Maximum Occupancy', [validators.InputRequired()])
 
     def validate_name(self, field):
         if self.get_names():
