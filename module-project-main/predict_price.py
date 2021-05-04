@@ -3,9 +3,11 @@ import numpy as np
 import pandas as pd
 
 from sklearn.metrics import mean_squared_error as mse
-from xgboost import XGBRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.pipeline import make_pipeline
+from sklearn.impute import SimpleImputer
 
-from inside_airbnb import InsideAirBnB
+from .inside_airbnb import InsideAirBnB
 
 
 class PredictPrice:
@@ -14,6 +16,7 @@ class PredictPrice:
 
     def predict_price(self, form):
         form.pop('name')
+        form.pop('csrf_token')
         location = form.pop('location')
 
         listings = self.get_listings(location)
@@ -57,7 +60,7 @@ class PredictPrice:
         return X, y, my_listing
 
     def make_model(self, X, y):
-        model = XGBRegressor(n_estimators=1000, objective='reg:squarederror', n_jobs=-1)
+        model = make_pipeline(SimpleImputer(), GradientBoostingRegressor(n_estimators=500, criterion='mse'))
         return model.fit(X, y)
 
     def predict(self, model, listing):
@@ -83,6 +86,6 @@ class PredictPrice:
     def load_model(self):
         cache_folder, model_filename = 'cache', 'model.json'
         model_path = os.path.join(cache_folder, model_filename)
-        model = XGBRegressor()
+        model = GradientBoostingRegressor()
         model.load_model(fname=model_path)
         return model

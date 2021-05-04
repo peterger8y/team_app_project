@@ -61,6 +61,8 @@ def create_app():
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
+        if current_user.is_authenticated:
+            logout_user()
         form = LoginForm()
         if request.method == 'POST' and form.validate_on_submit():
             check = User.query.filter(
@@ -90,14 +92,14 @@ def create_app():
             cando = form.bedrooms.data
             blue = form.accommodates.data
             result = request.form.to_dict()
-            nanna = predictor(result)
+            nanna = predictor.predict_price(result)
             property1 = Property(location=str(alpha), latitude=beta, longitude=gamma, score=delta, bedrooms=cando,
-                                 prediction=nanna, name=name, user_id=current_user.id, host_listings=omega, accommodates=blue)
+                                 prediction=nanna, name=name, user_id=current_user.id, host_listings=omega,
+                                 accommodates=blue)
             DB.session.add(property1)
             DB.session.commit()
             return redirect('profile')
         return render_template('pre_input.html', form=form)
-
 
     @app.route('/logout')
     @login_required
@@ -112,7 +114,9 @@ def create_app():
             alpha = Property.query.filter_by(user_id=current_user.id).all()
             for x in alpha:
                 delta = {'property_#': x.id, 'location': x.location, 'latitude': x.latitude, 'longitude': x.longitude,
-                         'score': x.score, 'optimized price': x.prediction, 'name': x.name}
+                         'score': x.score, 'bedrooms': x.bedrooms, 'max occupancy': x.accommodates,
+                         'total listings': x.host_listings,
+                         'optimized price': x.prediction, 'name': x.name}
                 dict_list.append(delta)
             choices = []
             for x in dict_list:
